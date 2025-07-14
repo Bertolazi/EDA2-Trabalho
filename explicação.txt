@@ -20,5 +20,7 @@ VARIÁVEIS:
             (r)- local do restaurante;
             (k)- número de pedidos disponíveis;
             (d_i)- destino do i-ésimo pedido.
+    . ENTREGAS:
+        
 
 

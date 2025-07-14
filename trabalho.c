@@ -3,6 +3,8 @@
 
 int main(){
     int N, M, H, T, I, C, P, Q;
+    char op;
+    int des;
     scanf("%d %d %d %d %d %d %d", &N, &M, &H, &T, &I, &C, &P);
     int o[P], u[M], v[M], w[M];
     for(int i = 0; i < P; i++){
@@ -20,5 +22,6 @@ int main(){
         for(int n = 0; n < k[m]; n++){
             scanf("%d", &d[m][n]);
     }
+    scanf("%c %d", &op, &des);
     return 0;
 }
