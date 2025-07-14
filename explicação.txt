@@ -1,0 +1,24 @@
+VARIÁVEIS:
+    . PRIMEIRA LINHA:
+        (N)- número de locais (vértices), numerados de (1) a (N);
+        (M)- número de ruas (arestas);
+        (H)- índice do local onde o entregador começa e termina (casa);
+        (T)- capacidade máxima do tanque (em km);
+        (I)- combustível inicial no tanque (em km);
+        (C)- capacidade máxima da mochila (número máximo de pedidos);
+        (P)- quantidade de locais que possuem posto de gasolina.
+    . P LINHAS SEGUINTES:
+        (o)- A segunda linha contém (P) inteiros indicando os locais que possuem posto de gasolina;
+    . M LINHAS SEGUIDAS:
+        Em seguida, (M) linhas descrevem as ruas, cada uma contendo três inteiros.
+            (u) e (v)- Locais conectados (rua dirigida de (u) para (v));
+            (w)- Custo (distância em km) da travessia.
+    . LINHA SEGUINTE:
+        (Q)- Uma linha com um inteiro (Q) — a quantidade de restaurantes.
+    . Q LINHAS SEGUINTES:
+        Em seguida, (Q) linhas descrevem o local do restaurante, Num de pedidos e o destino do pedido.
+            (r)- local do restaurante;
+            (k)- número de pedidos disponíveis;
+            (d_i)- destino do i-ésimo pedido.
+
+
