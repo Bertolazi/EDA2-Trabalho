@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 typedef struct node *link;
-struct node{int v, custo; link next;};
+struct node{int w, custo; link next;};
 
 typedef struct Graph *Graph;
 struct Graph {
@@ -26,12 +26,12 @@ Edge EDGE(int v, int w, int custo) {
     return e;
 }
 
-link New(int v, int custo, link next){
+link New(int w, int custo, link next){
     link x = malloc(sizeof(*x));
 
     if(x==NULL) return NULL;
 
-    x->v = v; 
+    x->w = w; 
     x->custo = custo;
     x->next = next;
 
@@ -57,8 +57,27 @@ void GRAPHInsert(Graph g, Edge e){
     g->e++;
 }
 
+int moveLocal(int local){
+    return local;
+}
+
+int abastecer(){
+    return 1;
+}
+
+int coletaPedido(int pedido){
+    return pedido;
+}
+
+int entregaPedido(int pedido){
+    return pedido;
+}
+
 int *postos;
 Restaurante *restaurantes;
+int capacidadeCombustivel, combustivel,
+    capacidadeMochila;
+link ultimoLocal;
 
 int main(){
     int N, M, H, T, I, C, P, Q;
@@ -67,7 +86,10 @@ int main(){
     Graph G;
 
     scanf("%d %d %d %d %d %d %d", &N, &M, &H, &T, &I, &C, &P);
-    
+    capacidadeCombustivel = T;
+    combustivel = I;
+    capacidadeMochila = C;
+
     G = GRAPHInit(N);
     if(!G){
         return -1;
@@ -87,7 +109,6 @@ int main(){
         scanf("%d", &posto);
         postos[posto] = 1;
     }
-
     int u, v, w;
     //ruas
     for(int j = 0; j < M; j++){
@@ -113,35 +134,55 @@ int main(){
             scanf("%d", &restaurantes[m].destinoPedido[n]);
     }
     
-    // Menu de opções
-    scanf(" %c", &op);
-    
-    if(op == 'm')
-    {
-        scanf("%d", &X);
-        // Função de mover para X
-    }
-    else if (op == 'a')
-    {
-        // Função de abastecer
-    }
-    else if(op == 'p')
-    {
-        scanf("%d", &D);
-        // Função pegar pedido D
-    }
-    else if (op == 'o')
-    {
-        scanf("%d", &D);
-        // Função entregar pedido no local D
-    }
-    else if(op == 'x')
-    {
-        // Função de encerrar a entrega
+    while(1){
+        // Menu de opções
+        scanf(" %c", &op);
+        int res;
+        switch (op)
+        {
+            case 'm':
+                scanf("%d", &X);
+                // Função de mover para X
+                res = moveLocal(X);
+                printf("%d", res);
+                break;
+            case 'a':
+                // Função de abastecer
+                res = abastecer();
+                printf("%d", res);
+                break;
+            case 'p':
+                scanf("%d", &D);
+                // Função pegar pedido D
+                res = coletaPedido(D);
+                printf("%d", res);
+                break;
+            case 'o':
+                scanf("%d", &D);
+                // Função entregar pedido no local D
+                res = entregaPedido(D);
+                printf("%d", res);
+                break;
+            case 'x':
+                // Função de encerrar a entrega
+                printf("1 \n");
+                return 0;
+        }
     }
 
-    free(G);
+    for (int i = 0; i < N; i++) {
+        link atual = G->adj[i];
+        while (atual != NULL) {
+            link proximo = atual->next;
+            free(atual);
+            atual = proximo;
+        }
+    }
+    free(G->adj);
+    free(G);   
     free(postos);
+    for (int m = 0; m < Q; m++)
+        free(restaurantes[m].destinoPedido);
     free(restaurantes);
     return 0;
 }
