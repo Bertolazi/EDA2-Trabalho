@@ -175,7 +175,7 @@ int main(){
                 scanf("%d", &X);
                 int distMov;
                 res = moveLocal(posicaoAtual, N, G, X, combustivelAtual, &distMov);
-                printf("%d", res);
+                printf("%d\n", res);
                 if(res != 0){
                     combustivelAtual -= distMov;
                     posicaoAtual = X;
