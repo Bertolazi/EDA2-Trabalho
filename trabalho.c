@@ -20,6 +20,18 @@ typedef struct {
     int v, w, custo;
 } Edge;
 
+typedef struct {
+    int *pedidos;       // Array de pedidos na mochila
+    int num_pedidos;    // Quantidade atual de pedidos
+    int capacidade;     // Capacidade máxima da mochila
+} Mochila;
+
+typedef struct {
+    int posicao;
+    int combustivel;
+    Mochila mochila;
+} Entregador;
+
 Edge EDGE(int v, int w, int custo) {
     Edge e;
     e.v = v;
@@ -85,37 +97,74 @@ void Dijkstra(Graph G, int s, int *pa, int *distD){
     }
 }
 
-int moveLocal(int localMove, int N, Graph G, int localDestinoMove, int combustivel,int *distM){
+int moveLocal(int localAtual, int N, Graph G, int localDestino, int combustivelAtual, int *distanciaMovimento) {
     int pa[N];
-    int distMInterno[N];
-    Dijkstra(G, localMove, pa, distMInterno);
-    if(distMInterno[localDestinoMove] <= combustivel){
-        *distM = distMInterno[localDestinoMove];
-        return 1;
+    int dist[N];
+    Dijkstra(G, localAtual, pa, dist);
+    
+    if (dist[localDestino] <= combustivelAtual) {
+        *distanciaMovimento = dist[localDestino];
+        return localDestino; // Retorna o novo local
+    }
+    return localAtual; // Permanece no mesmo local se não puder mover
+}
+
+int abastecer(int localAtual, int *postos, int *combustivelAtual, int capacidadeTanque) {
+    if (!postos[localAtual]) {
+        return 0;
+    }
+    if (*combustivelAtual == capacidadeTanque) {
+        printf("%d\n", *combustivelAtual);
+        exit(0);
+    }
+    *combustivelAtual = capacidadeTanque;
+    return 1;
+}
+
+int coletaPedido(int localAtual, Restaurante *restaurantes, int numRestaurantes, int pedidoD, int *mochila, int *numPedidosMochila, int capacidadeMochila) {
+    // Verifica capacidade da mochila
+    if (*numPedidosMochila >= capacidadeMochila) {
+        return 0;
+    }
+    
+    // Procura restaurante no local atual
+    for (int i = 0; i < numRestaurantes; i++) {
+        if (restaurantes[i].local == localAtual) {
+            // Verifica se o pedido existe neste restaurante
+            for (int j = 0; j < restaurantes[i].numPedidos; j++) {
+                if (restaurantes[i].destinoPedido[j] == pedidoD) {
+                    mochila[(*numPedidosMochila)++] = pedidoD;
+                    return 1;
+                }
+            }
+        }
     }
     return 0;
 }
 
-int abastecer(int localPostos, int *postosAbastecimento, int *combustivelAtual, int combustivelMaximo){
-    if(postosAbastecimento[localPostos] == 1){
-        *combustivelAtual = combustivelMaximo;
-        return *combustivelAtual;
+int entregaPedido(int localAtual, int pedidoD, int *mochila, int *numPedidosMochila) {
+    // Verifica se o local atual é o destino do pedido
+    if (localAtual != pedidoD) {
+        return 0;
+    }
+    
+    // Procura pedido na mochila
+    for (int i = 0; i < *numPedidosMochila; i++) {
+        if (mochila[i] == pedidoD) {
+            // Remove pedido (substitui pelo último elemento)
+            mochila[i] = mochila[--(*numPedidosMochila)];
+            return 1;
+        }
     }
     return 0;
 }
 
-int coletaPedido(int pedido){
-    return pedido;
-}
-
-int entregaPedido(int pedido){
-    return pedido;
-}
-
-int *postos;
-Restaurante *restaurantes;
-int capacidadeCombustivel, combustivel, capacidadeMochila;
-link ultimoLocal;
+int *postos;                    // Array marcando locais que são postos
+Restaurante *restaurantes;      // Array de restaurantes
+int capacidadeCombustivel;      // T
+int capacidadeMochila;          // C
+int *mochila;                   // Array de pedidos coletados
+int numPedidosMochila = 0;      // Contador de pedidos na mochila
 
 int main(){
     int N, M, H, T, I, C, P, Q;
@@ -125,19 +174,19 @@ int main(){
 
     scanf("%d %d %d %d %d %d %d", &N, &M, &H, &T, &I, &C, &P);
     capacidadeCombustivel = T;
-    combustivel = I;
+    // combustivel = I;
     capacidadeMochila = C;
 
-    G = GRAPHInit(N);
+    G = GRAPHInit(N+1);
     if(!G){
         return -1;
     }
 
-    postos = malloc(P * sizeof(int));
+    postos = malloc((N+1) * sizeof(int));
     if(!postos){
         return -1;
     }
-    for(int i = 0; i < P; i++){
+    for(int i = 0; i < P+1; i++){
         postos[i] = 0;
     }
 
@@ -169,39 +218,42 @@ int main(){
             scanf("%d", &restaurantes[m].destinoPedido[n]);
     }
 
-    int posicaoAtual = H, combustivelAtual = I;
-    while(1){
+    mochila = malloc(capacidadeMochila * sizeof(int));
+    
+    int posicaoAtual = H;
+    int combustivelAtual = I;
+    
+    while(1) {
         scanf(" %c", &op);
-        int mov, abs, res;
-        switch (op)
-        {
-            case 'm':
-                scanf("%d", &X);
-                int distMov;
-                mov = moveLocal(posicaoAtual, N, G, X, combustivelAtual, &distMov);
-                printf("%d\n", mov);
-                if(mov != 0){
-                    combustivelAtual -= distMov;
-                    posicaoAtual = X;
-                }
-                break;
-            case 'a':
-                abs = abastecer(posicaoAtual, postos, &combustivelAtual, T);
-                printf("%d\n", abs);
-                break;
-            case 'p':
-                scanf("%d", &D);
-                res = coletaPedido(D);
-                printf("%d", res);
-                break;
-            case 'o':
-                scanf("%d", &D);
-                res = entregaPedido(D);
-                printf("%d", res);
-                break;
-            case 'x':
-                printf("1\n");
-                return 0;
+        
+        if (op == 'm') {
+            scanf("%d", &X);
+            int dist;
+            int novoLocal = moveLocal(posicaoAtual, N, G, X, combustivelAtual, &dist);
+            if (novoLocal != posicaoAtual) {
+                posicaoAtual = novoLocal;
+                combustivelAtual -= dist;
+            }
+            printf("%d\n", (novoLocal != posicaoAtual) ? 0 : 1); // Imprime e continua
+        }
+        else if (op == 'a') {
+            int res = abastecer(posicaoAtual, postos, &combustivelAtual, capacidadeCombustivel);
+            if(res == 1)
+                printf("%d\n", combustivelAtual); // Imprime e continua
+        }
+        else if (op == 'p') {
+            scanf("%d", &D);
+            int res = coletaPedido(posicaoAtual, restaurantes, Q, D, mochila, &numPedidosMochila, capacidadeMochila);
+            printf("%d\n", res); // Imprime e continua
+        }
+        else if (op == 'e') { // Observação: no seu código anterior era 'o' para entrega
+            scanf("%d", &D);
+            int res = entregaPedido(posicaoAtual, D, mochila, &numPedidosMochila);
+            printf("%d\n", res); // Imprime e continua
+        }
+        else if (op == 'x') {
+            printf("1\n"); // Único caso que encerra o programa
+            break; // Sai do loop para liberar memória
         }
     }
 

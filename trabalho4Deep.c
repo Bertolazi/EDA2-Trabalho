@@ -110,11 +110,15 @@ int moveLocal(int localAtual, int N, Graph G, int localDestino, int combustivelA
 }
 
 int abastecer(int localAtual, int *postos, int *combustivelAtual, int capacidadeTanque) {
-    if (postos[localAtual]) { // Se está em um posto
-        *combustivelAtual = capacidadeTanque;
-        return *combustivelAtual;
+    if (!postos[localAtual]) {
+        return 0;
     }
-    return 0;
+    if (*combustivelAtual == capacidadeTanque) {
+        printf("%d\n", *combustivelAtual);
+        exit(0);
+    }
+    *combustivelAtual = capacidadeTanque;
+    return 1;
 }
 
 int coletaPedido(int localAtual, Restaurante *restaurantes, int numRestaurantes, int pedidoD, int *mochila, int *numPedidosMochila, int capacidadeMochila) {
@@ -221,35 +225,35 @@ int main(){
     
     while(1) {
         scanf(" %c", &op);
-        int res;
         
         if (op == 'm') {
             scanf("%d", &X);
             int dist;
             int novoLocal = moveLocal(posicaoAtual, N, G, X, combustivelAtual, &dist);
-            printf("%d\n", (novoLocal != posicaoAtual) ? 1 : 0);
             if (novoLocal != posicaoAtual) {
                 posicaoAtual = novoLocal;
                 combustivelAtual -= dist;
             }
+            printf("%d\n", (novoLocal != posicaoAtual) ? 0 : 1); // Imprime e continua
         }
         else if (op == 'a') {
-            res = abastecer(posicaoAtual, postos, &combustivelAtual, capacidadeCombustivel);
-            printf("%d\n", res);
+            int res = abastecer(posicaoAtual, postos, &combustivelAtual, capacidadeCombustivel);
+            if(res == 1)
+                printf("%d\n", combustivelAtual); // Imprime e continua
         }
         else if (op == 'p') {
             scanf("%d", &D);
-            res = coletaPedido(posicaoAtual, restaurantes, Q, D, mochila, &numPedidosMochila, capacidadeMochila);
-            printf("%d\n", res);
+            int res = coletaPedido(posicaoAtual, restaurantes, Q, D, mochila, &numPedidosMochila, capacidadeMochila);
+            printf("%d\n", res); // Imprime e continua
         }
-        else if (op == 'o') {
+        else if (op == 'e') { // Observação: no seu código anterior era 'o' para entrega
             scanf("%d", &D);
-            res = entregaPedido(posicaoAtual, D, mochila, &numPedidosMochila);
-            printf("%d\n", res);
+            int res = entregaPedido(posicaoAtual, D, mochila, &numPedidosMochila);
+            printf("%d\n", res); // Imprime e continua
         }
         else if (op == 'x') {
-            printf("1\n");
-            break;
+            printf("1\n"); // Único caso que encerra o programa
+            break; // Sai do loop para liberar memória
         }
     }
 
