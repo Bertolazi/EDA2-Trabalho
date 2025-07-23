@@ -85,33 +85,68 @@ void Dijkstra(Graph G, int s, int *pa, int *distD){
     }
 }
 
-int moveLocal(int local, int N, Graph G, int localDestino, int combustivel,int *distM){
-    int pa[N];
-    int distMInterno[N];
-    Dijkstra(G, local, pa, distMInterno);
-    if(distMInterno[localDestino] <= combustivel){
-        *distM = distMInterno[localDestino];
-        return localDestino;
+int moveLocal(int local, Graph G, int localDestino, int combustivelDisponivel, int *distM){
+    for(link a = G->adj[local]; a != NULL; a = a->next){
+        if(a->w == localDestino){
+            if(a->custo <= combustivelDisponivel){
+                *distM = a->custo;
+                return 1;  
+            } else {
+                return 0;  
+            }
+        }
     }
-    return 0;
+    return 0; 
 }
 
-int abastecer(){
-    return 1;
+int abastecer(int posicao, int *postinho, int capacidadeMaxima){
+    if(postinho[posicao] == 1)
+        return capacidadeMaxima;
+    else
+        return 0;
 }
 
-int coletaPedido(int pedido){
-    return pedido;
+
+int coletaPedido(int localAgora, Restaurante *restaurantes, int mochilaMax, int *mochilaAgora, int Q, int *mochila){
+    if (*mochilaAgora >= mochilaMax)
+        return -1;
+    for (int i = 0; i < Q; i++) {
+        if (restaurantes[i].local == localAgora && restaurantes[i].numPedidos > 0) {
+            int destino = restaurantes[i].destinoPedido[0];
+            for (int j = 1; j < restaurantes[i].numPedidos; j++)
+                restaurantes[i].destinoPedido[j - 1] = restaurantes[i].destinoPedido[j];
+            restaurantes[i].numPedidos--;
+            mochila[*mochilaAgora] = destino;
+            (*mochilaAgora)++;
+            return 1;  
+        }
+    }
+    return -1;  
 }
 
-int entregaPedido(int pedido){
-    return pedido;
+
+int entregaPedido(int posicaoAtual, int destino, int *mochila, int *mochilaAtual) {
+    if (posicaoAtual != destino)
+        return 0;
+    for (int i = 0; i < *mochilaAtual; i++) {
+        if (mochila[i] == destino) {
+            for (int j = i + 1; j < *mochilaAtual; j++) {
+                mochila[j - 1] = mochila[j];
+            }
+            (*mochilaAtual)--;  
+            return 1;  
+        }
+    }
+    return 0;  
 }
+
+
 
 int *postos;
 Restaurante *restaurantes;
-int capacidadeCombustivel, combustivel, capacidadeMochila;
+int Cc, Co, Cm;
 link ultimoLocal;
+
 
 int main(){
     int N, M, H, T, I, C, P, Q;
@@ -120,84 +155,95 @@ int main(){
     Graph G;
 
     scanf("%d %d %d %d %d %d %d", &N, &M, &H, &T, &I, &C, &P);
-    capacidadeCombustivel = T;
-    combustivel = I;
-    capacidadeMochila = C;
+    Cc = T;
+    Co = I;
+    Cm = C;
 
     G = GRAPHInit(N);
-    if(!G){
-        return -1;
-    }
 
-    postos = malloc(P * sizeof(int));
-    if(!postos){
-        return -1;
-    }
-    for(int i = 0; i < P; i++){
-        postos[i] = 0;
-    }
+    postos = calloc(N + 1, sizeof(int)); 
+    if(!postos) return -1;
 
-    int posto = -1;
     for(int i = 0; i < P; i++){
+        int posto;
         scanf("%d", &posto);
-        postos[posto] = 1;
+        postos[posto - 1] = 1; 
     }
 
-    int u, v, w;
     for(int j = 0; j < M; j++){
+        int u, v, w;
         scanf("%d %d %d", &u, &v, &w);
-        GRAPHInsert(G, EDGE(u, v, w));
+        GRAPHInsert(G, EDGE(u - 1, v - 1, w)); 
     }
 
     scanf("%d", &Q);
     restaurantes = malloc(Q * sizeof(Restaurante));
-    if(!restaurantes){
-        return -1;
-    }
+    if(!restaurantes) return -1;
 
-    int r, k;
     for(int m = 0; m < Q; m++){
+        int r, k;
         scanf("%d %d", &r, &k);
-        restaurantes[m].local = r;
+        restaurantes[m].local = r - 1; 
         restaurantes[m].numPedidos = k;
-        restaurantes[m].destinoPedido = malloc(k*sizeof(int));
-        for(int n = 0; n < k; n++)
+        restaurantes[m].destinoPedido = malloc(k * sizeof(int));
+        for(int n = 0; n < k; n++){
             scanf("%d", &restaurantes[m].destinoPedido[n]);
+            restaurantes[m].destinoPedido[n]--; 
+        }
     }
 
-    int posicaoAtual = H, combustivelAtual = I;
+    int posicaoAtual = H - 1, combustivelAtual = I, mochilaAtual = 0;
+    int *mochila = malloc(Cm * sizeof(int));
+    for (int i = 0; i < N; i++) {
     while(1){
         scanf(" %c", &op);
-        int res;
-        switch (op)
-        {
+        int res, col, des;
+        switch (op){
             case 'm':
                 scanf("%d", &X);
+                X--; 
                 int distMov;
-                res = moveLocal(posicaoAtual, N, G, X, combustivelAtual, &distMov);
-                printf("%d\n", res);
+                res = moveLocal(posicaoAtual, G, X, combustivelAtual, &distMov);
                 if(res != 0){
                     combustivelAtual -= distMov;
                     posicaoAtual = X;
+                    printf("1\n");
+                } else {
+                    printf("0\n");
                 }
                 break;
             case 'a':
-                res = abastecer();
-                printf("%d", res);
+                if (combustivelAtual == Cc) {
+                    printf("0\n");
+                    break;
+                }
+                if (postos[posicaoAtual] == 1) {
+                    combustivelAtual = Cc;
+                    printf("%d\n", Cc);
+                } else {
+                    printf("0\n");
+                }
                 break;
+
             case 'p':
                 scanf("%d", &D);
-                res = coletaPedido(D);
-                printf("%d", res);
+                D--; 
+                col = coletaPedido(posicaoAtual, restaurantes, Cm, &mochilaAtual, Q, mochila);
+                printf("%d\n", col);
                 break;
+
             case 'o':
                 scanf("%d", &D);
-                res = entregaPedido(D);
-                printf("%d", res);
+                D--; 
+                des = entregaPedido(posicaoAtual, D, mochila, &mochilaAtual);
+                printf("%d\n", des);
                 break;
+
             case 'x':
                 printf("1\n");
+                fflush(stdout); 
                 return 0;
+            }
         }
     }
 
@@ -209,6 +255,7 @@ int main(){
             atual = proximo;
         }
     }
+    free (mochila);
     free(G->adj);
     free(G);   
     free(postos);
