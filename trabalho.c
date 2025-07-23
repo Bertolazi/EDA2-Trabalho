@@ -24,6 +24,18 @@ typedef struct {
     int v, w, custo;
 } Edge;
 
+typedef struct {
+    int *pedidos;       // Array de pedidos na mochila
+    int num_pedidos;    // Quantidade atual de pedidos
+    int capacidade;     // Capacidade máxima da mochila
+} Mochila;
+
+typedef struct {
+    int posicao;
+    int combustivel;
+    Mochila mochila;
+} Entregador;
+
 Edge EDGE(int v, int w, int custo) {
     Edge e = {v, w, custo};
     return e;
