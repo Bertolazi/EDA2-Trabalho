@@ -85,19 +85,23 @@ void Dijkstra(Graph G, int s, int *pa, int *distD){
     }
 }
 
-int moveLocal(int local, int N, Graph G, int localDestino, int combustivel,int *distM){
+int moveLocal(int localMove, int N, Graph G, int localDestinoMove, int combustivel,int *distM){
     int pa[N];
     int distMInterno[N];
-    Dijkstra(G, local, pa, distMInterno);
-    if(distMInterno[localDestino] <= combustivel){
-        *distM = distMInterno[localDestino];
-        return localDestino;
+    Dijkstra(G, localMove, pa, distMInterno);
+    if(distMInterno[localDestinoMove] <= combustivel){
+        *distM = distMInterno[localDestinoMove];
+        return 1;
     }
     return 0;
 }
 
-int abastecer(){
-    return 1;
+int abastecer(int localPostos, int *postosAbastecimento, int *combustivelAtual, int combustivelMaximo){
+    if(postosAbastecimento[localPostos] == 1){
+        *combustivelAtual = combustivelMaximo;
+        return *combustivelAtual;
+    }
+    return 0;
 }
 
 int coletaPedido(int pedido){
@@ -168,22 +172,22 @@ int main(){
     int posicaoAtual = H, combustivelAtual = I;
     while(1){
         scanf(" %c", &op);
-        int res;
+        int mov, abs, res;
         switch (op)
         {
             case 'm':
                 scanf("%d", &X);
                 int distMov;
-                res = moveLocal(posicaoAtual, N, G, X, combustivelAtual, &distMov);
-                printf("%d\n", res);
-                if(res != 0){
+                mov = moveLocal(posicaoAtual, N, G, X, combustivelAtual, &distMov);
+                printf("%d\n", mov);
+                if(mov != 0){
                     combustivelAtual -= distMov;
                     posicaoAtual = X;
                 }
                 break;
             case 'a':
-                res = abastecer();
-                printf("%d", res);
+                abs = abastecer(posicaoAtual, postos, &combustivelAtual, T);
+                printf("%d\n", abs);
                 break;
             case 'p':
                 scanf("%d", &D);
