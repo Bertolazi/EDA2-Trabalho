@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
-#include <stdbool.h>
 
 typedef struct node *link;
 struct node{int w, custo; link next;};
@@ -30,10 +28,13 @@ Edge EDGE(int v, int w, int custo) {
 
 link New(int w, int custo, link next){
     link x = malloc(sizeof(*x));
+
     if(x==NULL) return NULL;
+
     x->w = w; 
     x->custo = custo;
     x->next = next;
+
     return x;
 }
 
@@ -42,9 +43,11 @@ Graph GRAPHInit(int v){
     g->v = v;
     g->e=0;
     g->adj = malloc(v*sizeof(link));
+
     for(int i=0; i < v; i++){
         g->adj[i]=NULL;
     }
+
     return g;
 }
 
@@ -54,63 +57,30 @@ void GRAPHInsert(Graph g, Edge e){
     g->e++;
 }
 
-void Dijkstra(Graph G, int s, int *pa, int *distD){
-    bool mature[1000];
-    for(int v = 0; v < G->v; v++) {
-        pa[v] = -1;
-        mature[v] = false;
-        distD[v] = INT_MAX;
-    }
-    distD[s] = 0;
-    while(true){
-        int min = INT_MAX;
-        int y = -1;
-        for(int z = 0; z < G->v; z++){
-            if(!mature[z] && distD[z] < min){
-                min = distD[z];
-                y = z;
-            }
-        }
-        if(y == -1)
-            break;
-        for(link a = G->adj[y]; a != NULL; a = a->next){
-            int w = a->w;
-            int custo = a->custo;
-            if(!mature[w] && distD[y] + custo < distD[w]){
-                distD[w] = distD[y] + custo;
-                pa[w] = y;
-            }
-        }
-        mature[y] = true;
-    }
+// Função mover o local
+int moveLocal(int local){
+    return local;
 }
 
-int moveLocal(int local, int N, Graph G, int localDestino, int combustivel,int *distM){
-    int pa[N];
-    int distMInterno[N];
-    Dijkstra(G, local, pa, distMInterno);
-    if(distMInterno[localDestino] <= combustivel){
-        *distM = distMInterno[localDestino];
-        return localDestino;
-    }
-    return 0;
-}
-
+// Função para abastecer
 int abastecer(){
     return 1;
 }
 
+// Função de coletar pedido
 int coletaPedido(int pedido){
     return pedido;
 }
 
+// Função de entregar pedido
 int entregaPedido(int pedido){
     return pedido;
 }
 
 int *postos;
 Restaurante *restaurantes;
-int capacidadeCombustivel, combustivel, capacidadeMochila;
+int capacidadeCombustivel, combustivel,
+    capacidadeMochila;
 link ultimoLocal;
 
 int main(){
@@ -137,25 +107,28 @@ int main(){
         postos[i] = 0;
     }
 
+    // postos
     int posto = -1;
     for(int i = 0; i < P; i++){
         scanf("%d", &posto);
         postos[posto] = 1;
     }
-
     int u, v, w;
+    //ruas
     for(int j = 0; j < M; j++){
         scanf("%d %d %d", &u, &v, &w);
         GRAPHInsert(G, EDGE(u, v, w));
     }
 
+    // qtde restaurantes
     scanf("%d", &Q);
     restaurantes = malloc(Q * sizeof(Restaurante));
     if(!restaurantes){
         return -1;
     }
-
+    // dados resturante
     int r, k;
+    // local restaurante, numero pedidos, destino pedidos
     for(int m = 0; m < Q; m++){
         scanf("%d %d", &r, &k);
         restaurantes[m].local = r;
@@ -164,8 +137,7 @@ int main(){
         for(int n = 0; n < k; n++)
             scanf("%d", &restaurantes[m].destinoPedido[n]);
     }
-
-    int posicaoAtual = H, combustivelAtual = I;
+    
     while(1){
         scanf(" %c", &op);
         int res;
@@ -173,30 +145,30 @@ int main(){
         {
             case 'm':
                 scanf("%d", &X);
-                int distMov;
-                res = moveLocal(posicaoAtual, N, G, X, combustivelAtual, &distMov);
-                printf("%d\n", res);
-                if(res != 0){
-                    combustivelAtual -= distMov;
-                    posicaoAtual = X;
-                }
+                // Função de mover para X
+                res = moveLocal(X);
+                printf("%d", res);
                 break;
             case 'a':
+                // Função de abastecer
                 res = abastecer();
                 printf("%d", res);
                 break;
             case 'p':
                 scanf("%d", &D);
+                // Função pegar pedido D
                 res = coletaPedido(D);
                 printf("%d", res);
                 break;
             case 'o':
                 scanf("%d", &D);
+                // Função entregar pedido no local D
                 res = entregaPedido(D);
                 printf("%d", res);
                 break;
             case 'x':
-                printf("1\n");
+                // Função de encerrar a entrega
+                printf("1 \n");
                 return 0;
         }
     }
